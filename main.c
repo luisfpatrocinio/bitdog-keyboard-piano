@@ -21,6 +21,34 @@
 #include "buzzer.h"
 #include "keypad.h"
 
+#define LED_RED_PIN 13
+
+/**
+ * @brief Frequency map for each key in the 4x4 matrix (Hz).
+ */
+const int keypad_freq_map[4][4] = {
+    {262, 294, 330, 349},  // C4, D4, E4, F4
+    {392, 440, 494, 523},  // G4, A4, B4, C5
+    {587, 659, 698, 784},  // D5, E5, F5, G5
+    {880, 988, 1047, 1175} // A5, B5, C6, D6
+};
+
+/**
+ * @brief Pisca o LED vermelho conectado ao pino 13.
+ * @param times Quantas vezes piscar
+ * @param delay_ms Delay em ms entre liga/desliga
+ */
+void blink_led_red(int times, int delay_ms)
+{
+  for (int i = 0; i < times; i++)
+  {
+    gpio_put(LED_RED_PIN, 1);
+    sleep_ms(delay_ms);
+    gpio_put(LED_RED_PIN, 0);
+    sleep_ms(delay_ms);
+  }
+}
+
 /**
  * @brief Initializes the standard IO, buzzer, and keypad.
  *
@@ -31,7 +59,11 @@ void setup()
   stdio_init_all();
   initBuzzerPWM();
   initKeypad();
+  gpio_init(LED_RED_PIN);
+  gpio_set_dir(LED_RED_PIN, GPIO_OUT);
 }
+
+uint8_t row, col;
 
 /**
  * @brief Main program entry point.
@@ -42,19 +74,15 @@ void setup()
 int main()
 {
   setup();
-  // Play a sequence of 5 short welcome tones
-  int welcome_notes[5] = {262, 294, 330, 349, 392}; // C4, D4, E4, F4, G4
-  for (int i = 0; i < 5; i++)
-  {
-    playTone(welcome_notes[i], 50); // 50ms per note
-    sleep_ms(30);                   // Short pause between notes
-  }
+
+  blink_led_red(1, 100);
+  playWelcomeTones();
 
   while (true)
   {
-    uint8_t row, col;
     if (keypadScan(&row, &col))
     {
+      blink_led_red(1, 50);
       playTone(keypad_freq_map[row][col], 200); // 200ms
     }
     sleep_ms(10); // Simple debounce
