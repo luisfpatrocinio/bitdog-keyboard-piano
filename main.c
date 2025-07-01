@@ -42,12 +42,18 @@ void setup()
 int main()
 {
   setup();
-  playTone(262, 200); // Play a welcome tone
+  // Play a sequence of 5 short welcome tones
+  int welcome_notes[5] = {262, 294, 330, 349, 392}; // C4, D4, E4, F4, G4
+  for (int i = 0; i < 5; i++)
+  {
+    playTone(welcome_notes[i], 50); // 50ms per note
+    sleep_ms(30);                   // Short pause between notes
+  }
 
   while (true)
   {
     uint8_t row, col;
-    if (keypad_scan(&row, &col))
+    if (keypadScan(&row, &col))
     {
       playTone(keypad_freq_map[row][col], 200); // 200ms
     }
